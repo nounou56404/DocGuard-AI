@@ -1,0 +1,45 @@
+seed: 42
+
+prepare:
+  label_map: {non_scam: 0, scam: 1}
+  group_col: group_id          # les images d'un meme groupe restent dans le meme split
+  val_size: 0.15
+  test_size: 0.15
+
+preprocess:                    # meme pretraitement OpenCV a l'entrainement et en production
+  img_size: 224
+  deskew: true
+  denoise: true
+
+ocr:
+  engine: tesseract            # tesseract | easyocr
+  lang: fra+eng
+  binarize: true
+  clahe: true
+  suspect_keywords: [virement, urgent, iban, mot de passe, code, gagnant, paiement, rib]
+
+train:
+  cnn:                         # personne A
+    backbone: resnet50
+    lr: 0.0001
+    batch_size: 32
+    epochs: 20
+    freeze_epochs: 3
+    augmentation: true
+  vit:                         # personne B
+    backbone: vit_base_patch16_224
+    lr: 0.00002
+    batch_size: 16
+    epochs: 15
+    augmentation: true
+  ocr:                         # personne C
+    text_model: tfidf_logreg   # tfidf_logreg | camembert
+    C: 1.0
+    max_iter: 1000
+
+evaluate:
+  threshold: 0.5
+
+export:
+  opset: 17
+  atol: 0.0001                 # tolerance d'equivalence torch vs ONNX

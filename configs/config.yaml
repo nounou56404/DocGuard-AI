@@ -1,0 +1,28 @@
+project:
+  name: docguard-ai
+  random_seed: 42
+
+paths:
+  data_dir: data
+  raw_dir: data/raw
+  interim_dir: data/interim
+  processed_dir: data/processed
+  features_dir: data/features
+  metadata_dir: data/metadata
+  models_dir: models
+  reports_dir: reports
+
+data:
+  manifest_path: data/metadata/image_manifest.csv
+  catalog_path: data/metadata/datasets_catalog.csv
+
+outputs:
+  quality: data/interim/quality.json
+  manifest: data/processed/manifest.csv
+  images_dir: data/processed/images
+  baselines: reports/baselines.json
+
+# Une experience MLflow par approche, un modele par approche dans le Model Registry
+mlflow:
+  experiments: {cnn: scam-a, vit: scam-b, ocr: scam-c}
+  registry:    {cnn: scam-cnn, vit: scam-vit, ocr: scam-ocr}

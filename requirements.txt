@@ -1,0 +1,19 @@
+# Entrainement / pipeline (local ou Kaggle). Le service d'inference a son propre fichier :
+# deployment/requirements-serve.txt
+-e .
+pandas
+scikit-learn
+matplotlib
+torch
+torchvision
+timm
+onnx
+onnxruntime
+mlflow
+dvc
+pytesseract
+pytest
+ruff
+httpx
+fastapi
+python-multipart

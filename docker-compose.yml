@@ -1,23 +1,29 @@
-# Integration finale (phase 6)
+# Une API par approche (meme image, memes contrats), un front, un MLflow commun.
+x-api: &api
+  build: { context: ., dockerfile: deployment/Dockerfile }
+  env_file: .env
+  volumes: ["./models:/app/models:ro"]
+  healthcheck:
+    test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+    interval: 30s
+
 services:
-  api_a:
-    build: { context: ., dockerfile: a/api/Dockerfile }
+  api_cnn:
+    <<: *api
     ports: ["8001:8000"]
-    volumes: ["./a/models:/app/models:ro"]
-    env_file: .env
-  api_b:
-    build: { context: ., dockerfile: b/api/Dockerfile }
+  api_vit:
+    <<: *api
     ports: ["8002:8000"]
-    volumes: ["./b/models:/app/models:ro"]
-    env_file: .env
-  api_c:
-    build: { context: ., dockerfile: c/api/Dockerfile }
+  api_ocr:
+    <<: *api
     ports: ["8003:8000"]
-    volumes: ["./c/models:/app/models:ro"]
-    env_file: .env
+  front:
+    build: ./frontend
+    ports: ["3000:80"]
+    depends_on:
+      api_cnn: { condition: service_healthy }
   mlflow:
     image: ghcr.io/mlflow/mlflow
     command: mlflow server --host 0.0.0.0 --port 5000
     ports: ["5000:5000"]
     volumes: ["./mlruns:/mlruns"]
-  # front: interface de comparaison (port 3000) a ajouter en phase 6

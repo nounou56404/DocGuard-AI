@@ -1,41 +1,45 @@
 # DocGuard-AI - Detection de documents scam / non_scam
 
-Projet de fin de module Deep Learning Avance (vision, OCR, MLOps).
-Chaque membre livre un systeme complet avec sa propre approche ; les trois suivent le meme contrat.
+Projet de fin de module Deep Learning Avance (vision, OCR, MLOps). Trois approches comparees sur les memes donnees :
+**A** CNN (transfer learning, Grad-CAM) - **B** Vision Transformer (attention) - **C** OCR + classification du texte.
 
-| Dossier | Approche | Modele Registry | API | Front |
-|---|---|---|---|---|
-| `a/` | CNN + transfer learning (Grad-CAM) | scam-cnn | 8001 | 3001 |
-| `b/` | Vision Transformer (attention) | scam-vit | 8002 | 3002 |
-| `c/` | OCR + texte (boites OCR) | scam-ocr | 8003 | 3003 |
+Architecture complete : [`docs/architecture.md`](docs/architecture.md).
 
-## Chaine MLOps
-Donnees (DVC) -> Entrainement (MLflow) -> Registry (Staging/Production) -> Export ONNX -> API FastAPI -> Front React -> Docker Compose -> GitHub Actions
+## Demarrage
 
-## Arborescence
-- `contract/` : lecture seule, gele apres le jour 1 (schemas Pydantic, metriques, splits, modele de workflow)
-- `a/ b/ c/` : meme structure interne (`data/ src/ api/ frontend/ models/ tests/ dvc.yaml params.yaml docker-compose.yml`)
-- `.github/workflows/` : `ci-a.yml`, `ci-b.yml`, `ci-c.yml`
-- `docker-compose.yml` : integration finale (phase 6)
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env            # puis remplir (jamais commite)
+pytest -q                       # verifie l'installation
+```
 
-## Regles
-- Branches : `main` (protegee), `feat/a`, `feat/b`, `feat/c` ; fusion par PR relue par au moins une autre personne.
-- Chacun ne modifie que son dossier ; toute modification de `contract/` exige l'accord des trois.
-- Aucun import de code entre `a/`, `b/`, `c/` (seul `contract/` est partage).
-- Fichiers lourds via DVC, jamais Git. Secrets dans `.env` (jamais commite).
+## Donnees et pipeline
 
-## Contrat API
-`POST /predict` (multipart) -> `{label, score, model, heatmap?, ocr?}` ; `GET /health` ; `GET /models`.
+1. Deposer les images dans `data/raw/scam/` et `data/raw/non_scam/` (licence verifiee, aucune donnee personnelle).
+2. Generer le manifeste : `python -c "from docguard_ai.data.ingestion import build_manifest as b; b('data/raw').to_csv('data/metadata/image_manifest.csv', index=False)"`
+3. `dvc repro validate prepare baselines`, puis chacun execute `dvc repro train@<approche> evaluate@<approche> export@<approche>`.
+
+## Service
+
+```bash
+docker compose up --build       # api_cnn :8001, api_vit :8002, api_ocr :8003, front :3000, mlflow :5000
+```
+Swagger : `http://localhost:8001/docs`. Les modeles `.onnx` sont montes en lecture seule depuis `models/`.
+
+## Regles d'equipe
+
+- Chacun travaille dans son module (`models/cnn.py`, `vit.py`, `ocr_text.py`) et sa branche `feat/<approche>`.
+- Toute modification du code commun exige l'accord des trois. PR relue par au moins une autre personne.
+- Pas de fichier lourd ni de secret dans Git (DVC et `.env`).
 
 ## Livrables par personne
-- [ ] Donnees versionnees DVC + pipeline reproductible (`dvc repro`)
-- [ ] >= 3 experiences MLflow comparees + 1 modele dans le Registry
-- [ ] `model.onnx` + `model_card.json` + verification d'equivalence
+
+- [ ] Donnees versionnees DVC, pipeline reproductible
+- [ ] >= 3 experiences MLflow comparees, 1 modele dans le Model Registry
+- [ ] `model.onnx` + `model_card.json`, equivalence verifiee
 - [ ] API FastAPI (`/docs`, Pydantic, tests)
 - [ ] Page React (upload, webcam, affichage dynamique)
-- [ ] `docker-compose up` fonctionnel
-- [ ] Workflow GitHub Actions qui passe
-- [ ] README (installation, resultats, limites)
-
-## Phases
-0 Contrat + gel | 1 Donnees + baseline | 2 Entrainement + Registry | 3 ONNX + API | 4 React + Docker | 5 CI + docs | 6 Integration + soutenance
+- [ ] `docker compose up` fonctionnel
+- [ ] CI qui passe
+- [ ] README : installation, resultats mesures, limites
