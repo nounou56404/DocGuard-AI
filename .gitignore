@@ -1,0 +1,11 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+node_modules/
+mlruns/
+*.onnx
+*/data/raw
+*/data/processed
+*/models/checkpoint
+.DS_Store

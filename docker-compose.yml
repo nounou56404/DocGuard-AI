@@ -1,0 +1,23 @@
+# Integration finale (phase 6)
+services:
+  api_a:
+    build: { context: ., dockerfile: a/api/Dockerfile }
+    ports: ["8001:8000"]
+    volumes: ["./a/models:/app/models:ro"]
+    env_file: .env
+  api_b:
+    build: { context: ., dockerfile: b/api/Dockerfile }
+    ports: ["8002:8000"]
+    volumes: ["./b/models:/app/models:ro"]
+    env_file: .env
+  api_c:
+    build: { context: ., dockerfile: c/api/Dockerfile }
+    ports: ["8003:8000"]
+    volumes: ["./c/models:/app/models:ro"]
+    env_file: .env
+  mlflow:
+    image: ghcr.io/mlflow/mlflow
+    command: mlflow server --host 0.0.0.0 --port 5000
+    ports: ["5000:5000"]
+    volumes: ["./mlruns:/mlruns"]
+  # front: interface de comparaison (port 3000) a ajouter en phase 6
