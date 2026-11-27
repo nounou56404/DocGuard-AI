@@ -1,6 +1,0 @@
-# Service d'inference : un modele par dossier models/<approche>/ (model.onnx + model_card.json)
-approaches: [cnn, vit, ocr]
-ports:
-  cnn: 8001
-  vit: 8002
-  ocr: 8003
