@@ -1,5 +1,0 @@
-[core]
-    remote = storage
-['remote "storage"']
-    # A remplacer par le stockage choisi par l'equipe (S3, Hugging Face, Google Drive...)
-    url = s3://docguard-ai/dvc-store
